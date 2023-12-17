@@ -1,6 +1,10 @@
 import React from 'react';
 import { BackHandler } from 'react-native';
 import styled from 'styled-components/native';
+import { Audio } from 'expo-av';
+import { useFocusEffect } from '@react-navigation/native';
+
+
 
 const Background = styled.ImageBackground`
   display: flex;
@@ -39,26 +43,62 @@ const ButtonText = styled.Text`
 
 function MenuScreen({ navigation }) {
 
-    function Start() {
-      navigation.navigate('GameScreen');
-    }
+  function Start() {
+    navigation.navigate('GameScreen', {isNewGame: true});
+  }
 
-    function Exit() {
-        BackHandler.exitApp();
-    }
+  function LoadGame() {
+    navigation.navigate('GameScreen');
+  }
 
+  function Exit() {
+    BackHandler.exitApp();
+  }
+
+    let soundObject = null;
+    async function SwitchSound() {
+      if (soundObject) {
+        const status = await soundObject.getStatusAsync();
+        if (status.isLoaded) {
+          if (status.isPlaying) {
+            await soundObject.stopAsync();
+          } else {
+            await soundObject.playAsync();
+          }
+        }
+      } else {
+        soundObject = new Audio.Sound();
+        try {
+          await soundObject.loadAsync(require('./assets/music/main-menu.mp3'), { isLooping: true });
+          await soundObject.playAsync();
+        } catch (error) {
+          console.error("Error loading sound", error);
+        }
+      }
+    }
+    useFocusEffect(
+      React.useCallback(() => {
+        SwitchSound();
+        return () => {
+          if (soundObject) {
+            soundObject.stopAsync();
+          }
+        };
+      }, [])
+    );
+  
     return (
-      <Background source={require('./assets/main.gif')}>
+      <Background source={require('./assets/main-menu.gif')}>
         <Menu>
-          <Button>
-            <ButtonText onPress={Start}>New game</ButtonText>
-          </Button>
-          <Button>
-            <ButtonText>Continue</ButtonText>
-          </Button>
-          <Button onPress={Exit}>
-            <ButtonText>Exit</ButtonText>
-          </Button>
+        <Button onPress={Start}>
+          <ButtonText>New game</ButtonText>
+        </Button>
+        <Button onPress={LoadGame}>
+          <ButtonText>Continue</ButtonText>
+        </Button>
+        <Button onPress={Exit}>
+          <ButtonText>Exit</ButtonText>
+        </Button>
         </Menu>
         
       </Background>

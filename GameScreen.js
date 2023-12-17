@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components/native';
-import { Image } from 'react-native';
-import { ScrollView } from 'react-native';
-import { TouchableOpacity } from 'react-native';
-import { Player } from 'react-native-audio-toolkit';
+import { Image, TouchableOpacity } from 'react-native';
+import { Audio } from 'expo-av';
+import { useFocusEffect } from '@react-navigation/native';
+import React from 'react';
+import scenario from './assets/scenario.json';
+import { imageFiles, audioFiles } from './assets';
 
 const Background = styled.ImageBackground`
   display: flex;
@@ -19,7 +21,7 @@ const Menu = styled.View`
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  height: 160px;
+  height: 150px;
   background: rgba(0, 0, 0, 0.80);
   opacity: ${({ visible }) => (visible ? 1 : 0)};
 `
@@ -45,12 +47,9 @@ const IconButton = styled(Image)`
   margin: 0 10px 0 10px;
 `;
 
-const Scrollable = styled(ScrollView)`
+const TextContent = styled.Text`
   margin: 15px 15px 0 15px;
   height: 70px;
-`;
-
-const TextContent = styled.Text`
   color: #E2DED3;
   font-family: Roboto;
   font-size: 20px;
@@ -58,16 +57,12 @@ const TextContent = styled.Text`
   font-weight: 400;
 `;
 
-function GameScreen({ navigation }) {
+function GameScreen({ navigation, route: navigationRoute }) {
 
   const [isUIVisible, setUIVisible] = useState(true);
-  // const player = new Player(require('./assets/music/main-menu.mp3')).prepare((err) => {
-  //   if (err) {
-  //     console.error('error at _reloadPlayer :', err);
-  //   } else {
-  //     player.play();
-  //   }
-  // });
+  useEffect(() => {
+    SwitchSound();
+  }, []);
 
   function Back2Menu() {
     navigation.navigate('MenuScreen');
@@ -81,26 +76,97 @@ function GameScreen({ navigation }) {
     setUIVisible(!isUIVisible);
   }
 
-  function SwitchSound() {
-    // TODO
+
+  let soundObject = null;
+  async function SwitchSound() {
+    if (soundObject) {
+      const status = await soundObject.getStatusAsync();
+      if (status.isLoaded) {
+        if (status.isPlaying) {
+          await soundObject.stopAsync();
+        } else {
+          await soundObject.playAsync();
+        }
+      }
+    } else {
+      soundObject = new Audio.Sound();
+      try {
+        await soundObject.loadAsync(audioFiles[currentScene.audio], { isLooping: true });
+        await soundObject.playAsync();
+      } catch (error) {
+        console.error("Error loading sound", error);
+      }
+    }
   }
+  
+  useFocusEffect(
+    React.useCallback(() => {
+      SwitchSound();
+      return () => {
+        if (soundObject) {
+          soundObject.stopAsync();
+        }
+      };
+    }, [])
+  );
+  
+  const [chapter, setChapter] = useState(0);
+  const [route, setRoute] = useState(0);
+  const [scene, setScene] = useState(0);
+  const [content, setContent] = useState(0);
+
+  useEffect(() => {
+    const isNewGame = navigationRoute.params?.isNewGame;
+    if (isNewGame !== undefined) {
+      setChapter(0);
+      setRoute(0);
+      setScene(0);
+      setContent(0);
+    }
+  }, [navigationRoute.params?.isNewGame]);
+
+  const Next = () => {
+    const chapterData = scenario.chapters[chapter];
+    const routeData = chapterData.routes[route];
+    const sceneData = routeData.scenes[scene];
+  
+    if (content < sceneData.content.length - 1) {
+      setContent(content + 1);
+    } else if (scene < routeData.scenes.length - 1) {
+      setScene(scene + 1);
+      setContent(0);
+    } else if (route < chapterData.routes.length - 1) {
+      setRoute(route + 1);
+      setScene(0);
+      setContent(0);
+    } else if (chapter < scenario.chapters.length - 1) {
+      setChapter(chapter + 1);
+      setRoute(0);
+      setScene(0);
+      setContent(0);
+    }
+  };
+
+  const [currentScene, setCurrentScene] = useState(scenario.chapters[0].routes[0].scenes[0]);
+
+  useEffect(() => {
+    setCurrentScene(scenario.chapters[chapter].routes[route].scenes[scene]);
+  }, [chapter, route, scene]);
 
     return (
-      <TouchableOpacity activeOpacity={1} onPress={isUIVisible ? null : Hide} style={{flex: 1}}>
-      <Background source={require('./assets/chose.png')}>
+      <TouchableOpacity activeOpacity={1} onPress={isUIVisible ? Next : Hide} style={{flex: 1}}>
+      <Background source={imageFiles[currentScene.image]}>
         <Menu visible={isUIVisible}>
-          <Scrollable>
-            <TextContent>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis hic possimus ullam eveniet animi delectus exercitationem officia consequatur. Dolore impedit ea ex ab a facilis ipsam magni reprehenderit velit et?
-            </TextContent>
-          </Scrollable>
+          <TextContent>
+            { scenario.chapters[chapter].routes[route].scenes[scene].content[content].text }
+          </TextContent>
           <ButtonBoxWrapper>
             <ButtonBox>
+              <Button onPress={() => { Back2Menu();}}>
+                <IconButton source={require('./assets/icons/back.png')} />
+              </Button>
               <Button onPress={SwitchSound}>
                 <IconButton source={require('./assets/icons/sound-on.png')} />
-              </Button>
-              <Button onPress={Back2Menu}>
-                <IconButton source={require('./assets/icons/back.png')} />
               </Button>
               <Button onPress={FastForward}>
                 <IconButton source={require('./assets/icons/fast-forward.png')} />
