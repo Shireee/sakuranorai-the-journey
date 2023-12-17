@@ -1,21 +1,24 @@
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import {AppRegistry} from 'react-native';
+import {name as appName} from './app.json';
+import GameScreen from './GameScreen';
+import MenuScreen from './MenuScreen';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, ImageBackground } from 'react-native';
 
-export default function App() {
+const Stack = createStackNavigator();
+
+function App() {
   return (
-    <ImageBackground source={require('./assets/main.gif')} style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </ImageBackground>
+    <NavigationContainer>
+    <StatusBar hidden = {true} />
+      <Stack.Navigator initialRouteName="Menu">
+        <Stack.Screen name="GameScreen" component={GameScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="MenuScreen" component={MenuScreen} options={{ headerShown: false }} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
+AppRegistry.registerComponent(appName, () => App);
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: '100%', // ensure the gif covers full width
-    height: '100%', // ensure the gif covers full height
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;
