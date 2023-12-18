@@ -7,7 +7,6 @@ import React from 'react';
 import scenario from './assets/scenario.json';
 import { imageFiles, audioFiles } from './assets';
 
-
 function GameScreen({ navigation }) {
 
   // Hide UI button logic
@@ -33,14 +32,12 @@ function GameScreen({ navigation }) {
     setCurrentScene(scenario.chapters[chapter].routes[route].scenes[scene]);
   }, [chapter, route, scene, content]);
 
-
-
   function Next() {
     // If choices are being shown, don't proceed to the next content
     if (showChoice) {
       return;
     }
-    
+
     const chapterData = scenario.chapters[chapter];
     const routeData = chapterData.routes[route];
     const sceneData = routeData.scenes[scene];
@@ -150,6 +147,7 @@ function GameScreen({ navigation }) {
 
 export default GameScreen;
 
+// Styled components
 const Background = styled.ImageBackground`
   display: flex;
   align-items: center;

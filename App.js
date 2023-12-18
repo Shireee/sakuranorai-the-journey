@@ -1,7 +1,5 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import {AppRegistry} from 'react-native';
-import {name as appName} from './app.json';
 import GameScreen from './GameScreen';
 import MenuScreen from './MenuScreen';
 import { StatusBar } from 'expo-status-bar';

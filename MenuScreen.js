@@ -77,6 +77,8 @@ function MenuScreen({ navigation }) {
 
 export default MenuScreen;
 
+// Styled components
+
 const Background = styled.ImageBackground`
   display: flex;
   width: 100%; 
