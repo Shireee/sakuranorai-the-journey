@@ -17,6 +17,16 @@ function GameScreen({ navigation }) {
 
   // Back to menu button logic
   function Back2Menu() {
+ 
+  if (soundObject && isSoundLoaded) { 
+    try {
+        soundObject.unloadAsync();
+        soundObject.stopAsync();
+    } catch (error) {
+      console.error('Error stopping sound', error);
+    }
+  }
+
     navigation.navigate('MenuScreen');
   }
 
@@ -69,40 +79,77 @@ function GameScreen({ navigation }) {
     }
   };
 
+
+
   // Sound logic
-  let soundObject = null;
-  async function SwitchSound() {
-    if (soundObject) {
-      const status = await soundObject.getStatusAsync();
-      if (status.isLoaded) {
-        if (status.isPlaying) {
-          await soundObject.stopAsync();
-        } else {
-          await soundObject.playAsync();
-        }
-      }
-    } else {
-      soundObject = new Audio.Sound();
+  const [isSoundOn, setSoundOn] = useState(true);
+  const [soundObject, setSoundObject] = useState(null);
+  const [isSoundLoaded, setIsSoundLoaded] = useState(false);
+  const [currentSoundFile, setCurrentSoundFile] = useState(null); 
+
+  async function loadSound() {
+    const newSoundFile = audioFiles[scenario.chapters[chapter].routes[route].scenes[scene].audio];
+  
+    // If the new sound file is the same as the currently playing one, skip the loading process
+    if (newSoundFile === currentSoundFile) {
+      return;
+    }
+  
+    // Stop and unload the current sound before loading a new one
+    if (soundObject && isSoundLoaded) { 
       try {
+        await soundObject.stopAsync();
         await soundObject.unloadAsync();
-        await soundObject.loadAsync(audioFiles[scenario.chapters[chapter].routes[route].scenes[scene].audio], { isLooping: true });
-        await soundObject.playAsync();
       } catch (error) {
-        console.error("Error loading sound", error);
+        console.error('Error unloading sound', error);
+      }
+    }
+  
+    const newSoundObject = new Audio.Sound();
+    try {
+      await newSoundObject.loadAsync(newSoundFile, { isLooping: true });
+      setSoundObject(newSoundObject);
+      setIsSoundLoaded(true); 
+      setCurrentSoundFile(newSoundFile); 
+  
+      // Immediately play the sound after it has finished loading if isSoundOn is true
+      if (isSoundOn) await newSoundObject.playAsync();
+    } catch (error) {
+      console.error('Error loading sound', error);
+    }
+  }
+  
+  async function SwitchSound() {
+    if (soundObject && isSoundLoaded) { // Check if sound is loaded
+      if (isSoundOn) {
+        try {
+          if (await soundObject.getStatusAsync().isLoaded) {
+            await soundObject.playAsync();
+          }
+        } catch (error) {
+          console.error('Error playing sound', error);
+        }
+      } else {
+        try {
+          if (await soundObject.getStatusAsync().isLoaded) {
+            await soundObject.stopAsync();
+          }
+        } catch (error) {
+          console.error('Error stopping sound', error);
+        }
       }
     }
   }
 
-  useFocusEffect(
-    React.useCallback(() => {
+  useEffect(() => {
+    loadSound();
+  }, [chapter, route, scene]);
+  
+  useEffect(() => {
+    if (isSoundLoaded) {
       SwitchSound();
-      return () => {
-        if (soundObject) {
-          soundObject.stopAsync();
-        }
-      };
-    }, [scenario.chapters[chapter].routes[route].scenes[scene].audio])
-  );
+    }
+  }, [isSoundOn, isSoundLoaded]);
 
   return (
     <TouchableOpacity activeOpacity={1} onPress={isUIVisible ? Next : Hide} style={{ flex: 1 }}>
@@ -131,7 +178,7 @@ function GameScreen({ navigation }) {
               <Button onPress={Back2Menu}>
                 <IconButton source={require('./assets/icons/back.png')} />
               </Button>
-              <Button onPress={SwitchSound}>
+              <Button onPress={() => { setSoundOn(!isSoundOn) }} >
                 <IconButton source={require('./assets/icons/sound-on.png')} />
               </Button>
               <Button onPress={Hide}>

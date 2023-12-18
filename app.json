@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Sakuranorai: The Journey",
-    "slug": "Sakuranorai: The Journey",
+    "slug": "sakuranorai-the-journey",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,16 +15,23 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.shireee.sakuranoraithejourney"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.shireee.sakuranoraithejourney"
     },
     "web": {
       "favicon": "./assets/icon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3885d639-3b2a-43cb-9a70-58acd1cd3191"
+      }
     }
   }
 }
