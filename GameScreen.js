@@ -30,6 +30,7 @@ const ButtonBox = styled.View`
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
+  background-color: red;
 `
 
 const Button = styled.TouchableOpacity`
@@ -48,8 +49,12 @@ const IconButton = styled(Image)`
 `;
 
 const TextContent = styled.Text`
-  margin: 15px 15px 0 15px;
-  height: 70px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+  height: 105px;
+  padding: 15px 15px 0 15px;
   color: #E2DED3;
   font-family: Roboto;
   font-size: 20px;
