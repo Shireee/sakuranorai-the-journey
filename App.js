@@ -11,14 +11,14 @@ const Stack = createStackNavigator();
 function App() {
   return (
     <NavigationContainer>
-    <StatusBar hidden = {true} />
-      <Stack.Navigator initialRouteName="Menu">
-        <Stack.Screen name="GameScreen" component={GameScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="MenuScreen" component={MenuScreen} options={{ headerShown: false }} />
+      <StatusBar hidden = {true} />
+      <Stack.Navigator>
+        <Stack.Screen name="MenuScreen" component={MenuScreen}   options={{ headerShown: false }} />
+        <Stack.Screen name="GameScreen" component={GameScreen}   options={{ headerShown: false }} key={({ route }) => route.params && route.params.key}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
-AppRegistry.registerComponent(appName, () => App);
 
 export default App;
