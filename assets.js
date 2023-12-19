@@ -1,4 +1,5 @@
 export const imageFiles = {
+     menu: require('./assets/main-menu.gif'),
     '0-0-1.jpg': require('./assets/scenes/0-0-1.jpg'),
     '0-0-2.jpg': require('./assets/scenes/0-0-2.jpg'),
     '0-0-3.jpg': require('./assets/scenes/0-0-3.jpg'),
@@ -19,4 +20,6 @@ export const audioFiles = {
     'sadge.mp3': require('./assets/music/sadge.mp3'),
     'storm.mp3': require('./assets/music/storm.mp3'),
     'water.mp3': require('./assets/music/water.mp3'),
+     menu: require('./assets/music/main-menu.mp3')
   };
+

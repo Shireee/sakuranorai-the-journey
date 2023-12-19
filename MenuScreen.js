@@ -3,6 +3,7 @@ import { BackHandler } from 'react-native';
 import styled from 'styled-components/native';
 import { Audio } from 'expo-av';
 import { useFocusEffect } from '@react-navigation/native';
+import { imageFiles, audioFiles } from './assets';
 
 function MenuScreen({ navigation }) {
 
@@ -10,7 +11,7 @@ function MenuScreen({ navigation }) {
   function Start() {
     navigation.reset({
       index: 0,
-      routes: [{ name: 'GameScreen'}],
+      routes: [{ name: 'GameScreen' }],
     });
   }
 
@@ -25,48 +26,49 @@ function MenuScreen({ navigation }) {
   }
 
 
-// Sound logic
-let soundObject = null;
-async function SwitchSound() {
-  if (soundObject) {
-    const status = await soundObject.getStatusAsync();
-    if (status.isLoaded) {
-      if (status.isPlaying) {
-        await soundObject.stopAsync();
-      } else {
-        await soundObject.playAsync();
-      }
-    }
-  } else {
-    soundObject = new Audio.Sound();
-    try {
-      await soundObject.loadAsync(require('./assets/music/main-menu.mp3'), { isLooping: true });
+  // Sound logic
+  let soundObject = null;
+  async function SwitchSound() {
+    if (soundObject) {
       const status = await soundObject.getStatusAsync();
       if (status.isLoaded) {
-        await soundObject.playAsync();
-      }
-    } catch (error) {
-      console.error("Error loading sound", error);
-    }
-  }
-}
-
-useFocusEffect(
-  React.useCallback(() => {
-    SwitchSound();
-    return async () => { 
-      if (soundObject) {
-        const status = await soundObject.getStatusAsync();
-        if (status.isLoaded && status.isPlaying) { 
-          await soundObject.stopAsync(); 
+        if (status.isPlaying) {
+          await soundObject.stopAsync();
+        } else {
+          await soundObject.playAsync();
         }
       }
-    };
-  }, [])
-);
+    } else {
+      soundObject = new Audio.Sound();
+      try {
+        await soundObject.loadAsync(audioFiles.menu, { isLooping: true });
+        const status = await soundObject.getStatusAsync();
+        if (status.isLoaded) {
+          await soundObject.playAsync();
+        }
+      } catch (error) {
+        console.error("Error loading sound", error);
+      }
+    }
+  }
+
+  useFocusEffect(
+    React.useCallback(() => {
+      SwitchSound();
+
+      return async () => {
+        if (soundObject) {
+          const status = await soundObject.getStatusAsync();
+          if (status.isLoaded && status.isPlaying) {
+            await soundObject.stopAsync();
+          }
+        }
+      };
+    }, [])
+  );
 
   return (
-    <Background source={require('./assets/main-menu.gif')}>
+    <Background source={imageFiles.menu}>
       <Menu>
         <Button onPress={Start}>
           <ButtonText>Новая игра</ButtonText>
