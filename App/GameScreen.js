@@ -263,15 +263,16 @@ const Choice = styled.View`
 `
 const ChoiceButton = styled.TouchableOpacity`
   display: flex;
-  justify-content: center;
   align-items: center;
-  width: 200px;
-  height: 50px;
+  justify-content: center;
+  width: 100%;
+  min-height: 50px;
+  transition: 0.5s;
 `
 const ChoiceText = styled.Text`
   color: #E2DED3;
   font-family: Roboto;
-  font-size: 23px;
+  font-size: 25px;
   font-style: italic;
   font-weight: 400;
   letter-spacing: -0.9px;
