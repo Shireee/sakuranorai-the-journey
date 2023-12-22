@@ -10,6 +10,7 @@ function GameScreen({ navigation }) {
 
   // Hide UI button logic
   const [isUIVisible, setUIVisible] = useState(true);
+
   function Hide() {
     setUIVisible(!isUIVisible);
   }
@@ -34,27 +35,19 @@ function GameScreen({ navigation }) {
   const [route, setRoute] = useState(0);
   const [scene, setScene] = useState(0);
   const [content, setContent] = useState(0);
-  const [showChoice, setShowChoice] = useState(false);
-  const [currentScene, setCurrentScene] = useState(scenario.chapters[0].routes[0].scenes[0]);
-
-  useEffect(() => {
-    setCurrentScene(scenario.chapters[chapter].routes[route].scenes[scene]);
-  }, [chapter, route, scene, content]);
+  const [isChoice, setChoice] = useState(false);
 
   function Next() {
-    // If choices are being shown, don't proceed to the next content
-    if (showChoice) {
-      return;
-    }
+    // If choices are being shown, block Next()
+    if (isChoice) return;
 
     const chapterData = scenario.chapters[chapter];
     const routeData = chapterData.routes[route];
     const sceneData = routeData.scenes[scene];
 
-    // Stop if the current content is the last one
-    if (scenario.chapters[chapter].routes[route].scenes[scene].content[content].end) {
-      return;
-    }
+    // Stop game if we are reach last scene
+    if (scenario.chapters[chapter].routes[route].scenes[scene].content[content].end) return;
+    
 
     if (content < sceneData.content.length - 1) {
       setContent(content + 1);
@@ -68,7 +61,7 @@ function GameScreen({ navigation }) {
     } else if (chapter < scenario.chapters.length - 1) {
       // Check if the next chapter has more than one route
       if (scenario.chapters[chapter + 1].routes.length > 1) {
-        setShowChoice(true);
+        setChoice(true);
       } else {
         setChapter(chapter + 1);
         setRoute(0);
@@ -150,9 +143,9 @@ function GameScreen({ navigation }) {
 
   return (
     <TouchableOpacity activeOpacity={1} onPress={isUIVisible ? Next : Hide} style={{ flex: 1 }}>
-      <Background source={imageFiles[currentScene.image]}>
-        <Choice showChoice={showChoice}>
-          {showChoice && scenario.chapters[chapter + 1].routes.map((route, index) => (
+      <Background source={ imageFiles[scenario.chapters[chapter].routes[route].scenes[scene].image] }>
+        <Choice showChoice={ isChoice }>
+          {isChoice && scenario.chapters[chapter + 1].routes.map((route, index) => (
             <ChoiceButton
               key={index}
               onPress={() => {
@@ -160,27 +153,19 @@ function GameScreen({ navigation }) {
                 setRoute(index);
                 setScene(0);
                 setContent(0);
-                setShowChoice(false);
+                setChoice(false);
               }}>
-              <ChoiceText>{route.root_title}</ChoiceText>
-            </ChoiceButton>
-          ))}
+              <ChoiceText>{ route.root_title }</ChoiceText>
+            </ChoiceButton>))
+          }
         </Choice>
-        <Menu visible={isUIVisible}>
-          <TextContent>
-            {scenario.chapters[chapter].routes[route].scenes[scene].content[content].text}
-          </TextContent>
+        <Menu visible={ isUIVisible }>
+          <TextContent>{ scenario.chapters[chapter].routes[route].scenes[scene].content[content].text }</TextContent>
           <ButtonBoxWrapper>
             <ButtonBox>
-              <Button onPress={Back2Menu}>
-                <IconButton source={imageFiles.backButton} />
-              </Button>
-              <Button onPress={() => { setSoundOn(!isSoundOn) }} >
-                <IconButton source={imageFiles.soundButton} />
-              </Button>
-              <Button onPress={Hide}>
-                <IconButton source={imageFiles.hideButton} />
-              </Button>
+              <Button onPress={ Back2Menu }><IconButton source={ imageFiles.backButton } /></Button>
+              <Button onPress={() => { setSoundOn(!isSoundOn) }}><IconButton source={ imageFiles.soundButton }/></Button>
+              <Button onPress={ Hide }><IconButton source={ imageFiles.hideButton }/></Button>
             </ButtonBox>
           </ButtonBoxWrapper>
         </Menu>
