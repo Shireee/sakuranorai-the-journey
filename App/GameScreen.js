@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components/native';
 import { Image, TouchableOpacity } from 'react-native';
 import { Audio } from 'expo-av';
-import { useFocusEffect } from '@react-navigation/native';
 import React from 'react';
-import scenario from './assets/scenario.json';
-import { imageFiles, audioFiles } from './assets';
+import scenario from '../assets/scenario.json';
+import { imageFiles, audioFiles } from '../assets/assets';
 
 function GameScreen({ navigation }) {
 
@@ -79,8 +78,6 @@ function GameScreen({ navigation }) {
     }
   };
 
-
-
   // Sound logic
   const [isSoundOn, setSoundOn] = useState(true);
   const [soundObject, setSoundObject] = useState(null);
@@ -151,12 +148,6 @@ function GameScreen({ navigation }) {
     }
   }, [isSoundOn, isSoundLoaded]);
 
-
-
-
-
-  
-
   return (
     <TouchableOpacity activeOpacity={1} onPress={isUIVisible ? Next : Hide} style={{ flex: 1 }}>
       <Background source={imageFiles[currentScene.image]}>
@@ -182,13 +173,13 @@ function GameScreen({ navigation }) {
           <ButtonBoxWrapper>
             <ButtonBox>
               <Button onPress={Back2Menu}>
-                <IconButton source={require('./assets/icons/back.png')} />
+                <IconButton source={imageFiles.backButton} />
               </Button>
               <Button onPress={() => { setSoundOn(!isSoundOn) }} >
-                <IconButton source={require('./assets/icons/sound-on.png')} />
+                <IconButton source={imageFiles.soundButton} />
               </Button>
               <Button onPress={Hide}>
-                <IconButton source={require('./assets/icons/eye.png')} />
+                <IconButton source={imageFiles.hideButton} />
               </Button>
             </ButtonBox>
           </ButtonBoxWrapper>

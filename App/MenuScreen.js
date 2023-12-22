@@ -3,7 +3,7 @@ import { BackHandler } from 'react-native';
 import styled from 'styled-components/native';
 import { Audio } from 'expo-av';
 import { useFocusEffect } from '@react-navigation/native';
-import { imageFiles, audioFiles } from './assets';
+import { imageFiles, audioFiles } from '../assets/assets';
 
 function MenuScreen({ navigation }) {
 

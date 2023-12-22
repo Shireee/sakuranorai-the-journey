@@ -1,7 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import GameScreen from './GameScreen';
-import MenuScreen from './MenuScreen';
+import GameScreen from './App/GameScreen';
+import MenuScreen from './App/MenuScreen';
 import { StatusBar } from 'expo-status-bar';
 
 const Stack = createStackNavigator();
