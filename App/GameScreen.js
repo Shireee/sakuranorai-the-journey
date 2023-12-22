@@ -17,16 +17,6 @@ function GameScreen({ navigation }) {
 
   // Back to menu button logic
   function Back2Menu() {
-
-    if (soundObject && isSoundLoaded) {
-      try {
-        soundObject.unloadAsync();
-        soundObject.stopAsync();
-      } catch (error) {
-        console.error('Error stopping sound', error);
-      }
-    }
-
     navigation.navigate('MenuScreen');
   }
 
@@ -47,18 +37,12 @@ function GameScreen({ navigation }) {
 
     // Stop game if we are reach last scene
     if (scenario.chapters[chapter].routes[route].scenes[scene].content[content].end) return;
-    
 
-    if (content < sceneData.content.length - 1) {
-      setContent(content + 1);
-    } else if (scene < routeData.scenes.length - 1) {
-      setScene(scene + 1);
-      setContent(0);
-    } else if (route < chapterData.routes.length - 1) {
-      setRoute(route + 1);
-      setScene(0);
-      setContent(0);
-    } else if (chapter < scenario.chapters.length - 1) {
+    // Hande text transition
+    if (content < sceneData.content.length - 1) setContent(content + 1);
+    else if (scene < routeData.scenes.length - 1) { setScene(scene + 1); setContent(0); }
+    else if (route < chapterData.routes.length - 1) { setRoute(route + 1); setScene(0); setContent(0); }
+    else if (chapter < scenario.chapters.length - 1) {
       // Check if the next chapter has more than one route
       if (scenario.chapters[chapter + 1].routes.length > 1) {
         setChoice(true);
@@ -143,8 +127,8 @@ function GameScreen({ navigation }) {
 
   return (
     <TouchableOpacity activeOpacity={1} onPress={isUIVisible ? Next : Hide} style={{ flex: 1 }}>
-      <Background source={ imageFiles[scenario.chapters[chapter].routes[route].scenes[scene].image] }>
-        <Choice showChoice={ isChoice }>
+      <Background source={imageFiles[scenario.chapters[chapter].routes[route].scenes[scene].image]}>
+        <Choice showChoice={isChoice}>
           {isChoice && scenario.chapters[chapter + 1].routes.map((route, index) => (
             <ChoiceButton
               key={index}
@@ -155,17 +139,17 @@ function GameScreen({ navigation }) {
                 setContent(0);
                 setChoice(false);
               }}>
-              <ChoiceText>{ route.root_title }</ChoiceText>
+              <ChoiceText>{route.root_title}</ChoiceText>
             </ChoiceButton>))
           }
         </Choice>
-        <Menu visible={ isUIVisible }>
-          <TextContent>{ scenario.chapters[chapter].routes[route].scenes[scene].content[content].text }</TextContent>
+        <Menu visible={isUIVisible}>
+          <TextContent>{scenario.chapters[chapter].routes[route].scenes[scene].content[content].text}</TextContent>
           <ButtonBoxWrapper>
             <ButtonBox>
-              <Button onPress={ Back2Menu }><IconButton source={ imageFiles.backButton } /></Button>
-              <Button onPress={() => { setSoundOn(!isSoundOn) }}><IconButton source={ imageFiles.soundButton }/></Button>
-              <Button onPress={ Hide }><IconButton source={ imageFiles.hideButton }/></Button>
+              <Button onPress={Back2Menu}><IconButton source={imageFiles.backButton} /></Button>
+              <Button onPress={() => { setSoundOn(!isSoundOn) }}><IconButton source={imageFiles.soundButton} /></Button>
+              <Button onPress={Hide}><IconButton source={imageFiles.hideButton} /></Button>
             </ButtonBox>
           </ButtonBoxWrapper>
         </Menu>
