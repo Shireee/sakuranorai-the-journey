@@ -4,7 +4,7 @@ module.exports = async function (env, argv) {
   
   const config = await createExpoWebpackConfigAsync(env, argv);
   config.output = {
-    publicPath: './'
+    publicPath: './'  // Only for build
   }
   config.module.rules.forEach(rule => {
     if (rule.oneOf instanceof Array) {
