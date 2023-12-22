@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BackHandler } from 'react-native';
 import styled from 'styled-components/native';
 import { Audio } from 'expo-av';
-import { useFocusEffect } from '@react-navigation/native';
 import { imageFiles, audioFiles } from '../assets/assets';
 
 function MenuScreen({ navigation }) {
@@ -25,60 +24,37 @@ function MenuScreen({ navigation }) {
     BackHandler.exitApp();
   }
 
-
   // Sound logic
-  let soundObject = null;
+  const [sound, setSound] = useState(new Audio.Sound());
+
   async function SwitchSound() {
-    if (soundObject) {
-      const status = await soundObject.getStatusAsync();
-      if (status.isLoaded) {
-        if (status.isPlaying) {
-          await soundObject.stopAsync();
-        } else {
-          await soundObject.playAsync();
-        }
-      }
+    const status = await sound.getStatusAsync();
+    if (status.isLoaded) {
+      if (status.isPlaying){
+        await sound.stopAsync();
+        await sound.unloadAsync();
+      } 
+      else await sound.playAsync();
     } else {
-      soundObject = new Audio.Sound();
-      try {
-        await soundObject.loadAsync(audioFiles.menu, { isLooping: true });
-        const status = await soundObject.getStatusAsync();
-        if (status.isLoaded) {
-          await soundObject.playAsync();
+        try {
+          await sound.loadAsync(audioFiles.menu, { isLooping: true });
+          await sound.playAsync();
+        } catch (error) {
+          console.error("Error loading sound", error);
         }
-      } catch (error) {
-        console.error("Error loading sound", error);
       }
-    }
   }
 
-  useFocusEffect(
-    React.useCallback(() => {
-      SwitchSound();
-
-      return async () => {
-        if (soundObject) {
-          const status = await soundObject.getStatusAsync();
-          if (status.isLoaded && status.isPlaying) {
-            await soundObject.stopAsync();
-          }
-        }
-      };
-    }, [])
-  );
-
+  useEffect(() => {
+    SwitchSound();
+  }, [])
+  
   return (
     <Background source={imageFiles.menu}>
       <Menu>
-        <Button onPress={Start}>
-          <ButtonText>Новая игра</ButtonText>
-        </Button>
-        <Button onPress={LoadGame}>
-          <ButtonText>Продолжить</ButtonText>
-        </Button>
-        <Button onPress={Exit}>
-          <ButtonText>Выход</ButtonText>
-        </Button>
+        <Button onPress={() => { SwitchSound(); Start()} }><ButtonText>Новая игра</ButtonText></Button>
+        <Button onPress={() => { SwitchSound(); LoadGame()} }><ButtonText>Продолжить</ButtonText></Button>
+        <Button onPress={ Exit }><ButtonText>Выход</ButtonText></Button>
       </Menu>
     </Background>
   );

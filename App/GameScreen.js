@@ -5,6 +5,7 @@ import { Audio } from 'expo-av';
 import React from 'react';
 import scenario from '../assets/scenario.json';
 import { imageFiles, audioFiles } from '../assets/assets';
+import { useFocusEffect } from '@react-navigation/native';
 
 function GameScreen({ navigation }) {
 
@@ -56,77 +57,58 @@ function GameScreen({ navigation }) {
   };
 
   // Sound logic
-  const [isSoundOn, setSoundOn] = useState(true);
-  const [soundObject, setSoundObject] = useState(null);
-  const [isSoundLoaded, setIsSoundLoaded] = useState(false);
-  const [currentSoundFile, setCurrentSoundFile] = useState(null);
-
-  async function loadSound() {
-    const newSoundFile = audioFiles[scenario.chapters[chapter].routes[route].scenes[scene].audio];
-
-    // If the new sound file is the same as the currently playing one, skip the loading process
-    if (newSoundFile === currentSoundFile) {
-      return;
-    }
-
-    // Stop and unload the current sound before loading a new one
-    if (soundObject && isSoundLoaded) {
-      try {
-        await soundObject.stopAsync();
-        await soundObject.unloadAsync();
-      } catch (error) {
-        console.error('Error unloading sound', error);
-      }
-    }
-
-    const newSoundObject = new Audio.Sound();
-    try {
-      await newSoundObject.loadAsync(newSoundFile, { isLooping: true });
-      setSoundObject(newSoundObject);
-      setIsSoundLoaded(true);
-      setCurrentSoundFile(newSoundFile);
-
-      // Immediately play the sound after it has finished loading if isSoundOn is true
-      if (isSoundOn) await newSoundObject.playAsync();
-    } catch (error) {
-      console.error('Error loading sound', error);
-    }
-  }
-
+  const [isSoundOn, setSoundOn] = useState(false);
+  const [sound, setSound] = useState(new Audio.Sound());
+  const [prevSound, setPrevSound] = useState(audioFiles[scenario.chapters[chapter].routes[route].scenes[scene].audio]);
+  
   async function SwitchSound() {
-    if (soundObject && isSoundLoaded) { // Check if sound is loaded
-      if (isSoundOn) {
-        try {
-          if (await soundObject.getStatusAsync().isLoaded) {
-            await soundObject.playAsync();
-          }
-        } catch (error) {
-          console.error('Error playing sound', error);
+    const status = await sound.getStatusAsync();
+    const currentSound = audioFiles[scenario.chapters[chapter].routes[route].scenes[scene].audio];
+
+    if (isSoundOn) {
+      if (status.isLoaded){
+
+        // if current sound is the same as previous sound, just play it
+        if (currentSound === prevSound) await sound.playAsync();
+
+        // if current sound is different from previous sound, unload previous sound, load current sound and play it
+        else {
+          await sound.unloadAsync();
+          await sound.loadAsync(currentSound, { isLooping: true });
+          await sound.playAsync();
+          setPrevSound(currentSound);
         }
-      } else {
+      } 
+
+      // if sound is not loaded, load current sound and play it
+      else {
         try {
-          if (await soundObject.getStatusAsync().isLoaded) {
-            await soundObject.stopAsync();
-          }
+          await sound.loadAsync(currentSound, { isLooping: true });
+          await sound.playAsync();
         } catch (error) {
-          console.error('Error stopping sound', error);
+          console.error("Error loading sound", error);
         }
       }
     }
+
+    // If sound off pause player 
+    else if (status.isLoaded) if (status.isPlaying) await sound.pauseAsync();
   }
 
-  useEffect(() => {
-    loadSound();
-  }, [chapter, route, scene]);
+  useFocusEffect(
+    React.useCallback(() => {
+      setSoundOn(true); // screen comes into focus
+  
+      return () => setSoundOn(false) // screen goes out of focus
+    }, [])
+  );
 
   useEffect(() => {
-    if (isSoundLoaded) {
-      SwitchSound();
-    }
-  }, [isSoundOn, isSoundLoaded]);
+    SwitchSound();
+  }, [isSoundOn])
 
   return (
-    <TouchableOpacity activeOpacity={1} onPress={isUIVisible ? Next : Hide} style={{ flex: 1 }}>
+    <TouchableOpacity activeOpacity={1} onPress={() => { isUIVisible ? Next() : Hide(); SwitchSound(); }} style={{ flex: 1 }}>
       <Background source={imageFiles[scenario.chapters[chapter].routes[route].scenes[scene].image]}>
         <Choice showChoice={isChoice}>
           {isChoice && scenario.chapters[chapter + 1].routes.map((route, index) => (
@@ -147,7 +129,7 @@ function GameScreen({ navigation }) {
           <TextContent>{scenario.chapters[chapter].routes[route].scenes[scene].content[content].text}</TextContent>
           <ButtonBoxWrapper>
             <ButtonBox>
-              <Button onPress={Back2Menu}><IconButton source={imageFiles.backButton} /></Button>
+              <Button onPress={() => { Back2Menu();  }}><IconButton source={imageFiles.backButton} /></Button>
               <Button onPress={() => { setSoundOn(!isSoundOn) }}><IconButton source={imageFiles.soundButton} /></Button>
               <Button onPress={Hide}><IconButton source={imageFiles.hideButton} /></Button>
             </ButtonBox>
